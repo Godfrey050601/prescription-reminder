@@ -1,1 +1,89 @@
-<h1>Prescription Reminder</h1><p>Flask app with background job scheduler for prescription reminders</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Prescription Reminder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; margin: 24px; }
+    h1 { margin-bottom: 8px; }
+    form, table { max-width: 840px; width: 100%; }
+    .card { border: 1px solid #ddd; border-radius: 12px; padding: 16px; margin: 16px 0; }
+    label { display: block; margin: 8px 0 4px; }
+    input { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 8px; }
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    button { padding: 10px 14px; border: none; border-radius: 10px; background: #2563eb; color: white; cursor: pointer; }
+    button.delete { background: #ef4444; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { padding: 10px; border-bottom: 1px solid #eee; text-align: left; }
+    th { background: #f8fafc; }
+    small { color: #64748b; }
+  </style>
+</head>
+<body>
+  <h1>Prescription Reminder</h1>
+  <p class="muted">Add reminders and a background scheduler will trigger them (check the server console for 🔔 alerts).</p>
+
+  <div class="card">
+    <h2>Add Reminder</h2>
+    <form method="POST" action="/">
+      <label for="med_name">Medicine name</label>
+      <input id="med_name" name="med_name" placeholder="e.g., Amoxicillin" required />
+
+      <label for="dosage">Dosage</label>
+      <input id="dosage" name="dosage" placeholder="e.g., 500 mg" required />
+
+      <div class="row">
+        <div>
+          <label for="date">Date</label>
+          <input id="date" name="date" type="date" required />
+        </div>
+        <div>
+          <label for="time">Time</label>
+          <input id="time" name="time" type="time" required />
+        </div>
+      </div>
+
+      <label for="repeat_minutes">Repeat every (minutes) — optional</label>
+      <input id="repeat_minutes" name="repeat_minutes" type="number" min="1" placeholder="e.g., 720 for every 12 hours" />
+
+      <div style="margin-top:12px;">
+        <button type="submit">Save Reminder</button>
+      </div>
+      <small>Timezone assumed: Africa/Johannesburg (local server time).</small>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Scheduled Reminders</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Medicine</th>
+          <th>Dosage</th>
+          <th>Next Due</th>
+          <th>Repeats (min)</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for r in reminders %}
+        <tr>
+          <td>{{ r[1] }}</td>
+          <td>{{ r[2] }}</td>
+          <td>{{ r[3] }}</td>
+          <td>{{ r[4] if r[4] else "-" }}</td>
+          <td>
+            <form method="POST" action="{{ url_for('delete_reminder', reminder_id=r[0]) }}" onsubmit="return confirm('Delete this reminder?')">
+              <button class="delete" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+      {% else %}
+        <tr><td colspan="5"><em>No reminders yet.</em></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
